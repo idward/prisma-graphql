@@ -1,0 +1,13 @@
+
+{
+    "projects": {
+        "prisma": {
+            "schemaPath":"src/generated/prisma.graphql",
+            "extensions": {
+                "endpoints":{
+                    "default": "https://eu1.prisma.sh/idward/graphql-prisma/dev"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "execMap": {
+        "js": "babel-node"
+    },
+    "env": {
+        "NODE_ENV": "development"
+    },
+    "ext": ".js,.jsx,.graphql",
+    "ignore": [
+        "test",
+        "dist",
+        "docs",
+        "logs"
+    ],
+    "events": {
+        "restart": "kill-port 8888",
+        "crash": "kill-port 8888"
+    },
+    "delay": "1500",
+    "script": "./src/index.js",
+    "restartable": "rs",
+    "verbose": false,
+    "watch": [
+        "src"
+    ],
+    "stdin": false,
+    "stdout": true,
+    "quiet": true,
+    "colours": true
+}

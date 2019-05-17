@@ -1,0 +1,29 @@
+{
+  "name": "graphql-bootcamp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon ./src/index.js",
+    "get-schema":"graphql get-schema -p prisma"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "graphql-cli": "^3.0.11",
+    "merge-graphql-schemas": "^1.5.8",
+    "prisma-binding": "^2.3.10"
+  },
+  "dependencies": {
+    "apollo-server-express": "^2.5.0",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "graphql-yoga": "^1.14.10",
+    "kill-port": "^1.5.0",
+    "uuid": "^3.3.2"
+  }
+}
