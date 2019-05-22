@@ -1,94 +1,145 @@
 import v4 from 'uuid/v4'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+
+import getUserId from '../../utils/getUserId'
 
 export default {
     Query: {
-        users(parent, args, { db }, info) {
-            if (!args.query) {
-                return db.users
+        users(parent, args, { prisma }, info) {
+            let opArgs = {}
+
+            if (args.query) {
+                opArgs = {
+                    where: {
+                        AND: [
+                            { name_contains: args.query },
+                            { email_contains: args.query }
+                        ]
+                    }
+                }
             }
-            return db.users.filter(user => {
-                return user.name.toLowerCase().includes(args.query.toLowerCase())
-            })
+
+            return prisma.query.users(opArgs, info)
+        },
+        me(parent, args, { prisma, headers }, info) {
+            const userId = getUserId(headers)
+
+            return prisma.query.user({
+                where: {
+                    id: userId
+                }
+            }, info)
         }
     },
     Mutation: {
-        createUser(parent, args, { db }, info) {
-            const emailTaken = db.users.some(user => {
-                return user.email === args.data.email
-            })
-            if (emailTaken) {
-                throw new Error('email taken')
-            }
-            const newUser = {
-                id: v4(),
-                ...args.data
+        async createUser(parent, args, { prisma }, info) {
+            // const emailTaken = await prisma.exists.User({
+            //     email: args.data.email
+            // })
+            // if (emailTaken) {
+            //     throw new Error('email taken')
+            // }
+
+            //check password length must be more than 8 digit
+            if (args.data.password.length < 8) {
+                throw new Error('Password must not be less than 8 characters')
             }
 
-            db.users.push(newUser)
-            return newUser
+            const password = await bcrypt.hash(args.data.password, 10)
+
+            const user = prisma.mutation.createUser({
+                data: {
+                    ...args.data,
+                    password
+                }
+            })
+
+            return {
+                user,
+                token: jwt.sign({ userId: user.id }, 'mysecret')
+            }
         },
-        updateUser(parent, { id, data }, { db }, info) {
-            const user = db.users.find(user => user.id === id)
+        async loginUser(parent, args, { prisma }, info) {
+            const user = await prisma.query.user({
+                where: {
+                    email: args.data.email
+                }
+            })
 
             if (!user) {
                 throw new Error('User not found')
             }
-            if (data.name) {
-                user.name = data.name
-            }
-            if (data.email) {
-                const emailTaken = db.users.some(user => user.email === data.email)
-                if (emailTaken) {
-                    throw new Error('Email taken')
-                }
-                user.email = data.email
-            }
-            if (data.age) {
-                user.age = data.age
-            }
 
-            return user
-        },
-        deleteUser(parent, args, { db }, info) {
-            const delUserIndex = db.users.findIndex(user => user.id === args.id)
-            if (delUserIndex === -1) {
+            //compare password is matched
+            const isMatched = await bcrypt.compare(args.data.password, user.password)
+
+            if (!isMatched) {
                 throw new Error('User not found')
             }
-            //return deleted user
-            let deletedUser = db.users.splice(delUserIndex, 1)[0]
-            deletedUser.posts = []
-            deletedUser.comments = []
 
-            //delete related post and comment
-            db.posts = db.posts.filter(post => {
-                if (post.author === args.id) {
-                    deletedUser.posts.push(post)
-                    db.comments = db.comments.filter(comment => comment.post !== post.id)
+            return {
+                user,
+                token: jwt.sign({ userId: user.id }, 'mysecret')
+            }
+        },
+        async updateUser(parent, { id, data }, { prisma, headers }, info) {
+            // const userExisted = prisma.exists.User({ id })
+
+            // if (!userExisted) {
+            //     throw new Error('User not found')
+            // }
+
+            const userId = getUserId(headers)
+
+            return prisma.mutation.updateUser({
+                data,
+                where: { id: userId }
+            }, info)
+        },
+        async deleteUser(parent, args, { prisma, headers }, info) {
+            // const userExisted = await prisma.exists.User({
+            //     id: args.id
+            // })
+            // if (!userExisted) {
+            //     throw new Error('User not found')
+            // }
+
+            const userId = getUserId(headers)
+
+            return prisma.mutation.deleteUser({
+                where: {
+                    id: userId
                 }
-                return post.author !== args.id
-            })
-            db.comments = db.comments.filter(comment => {
-                if (comment.author === args.id) {
-                    deletedUser.comments.push(comment)
-                }
-                return comment.author !== args.id
-            })
-
-            console.log(deletedUser)
-
-            return deletedUser
+            }, info)
         }
     },
     User: {
-        posts(parent, args, { db }, info) {
-            return db.posts.filter(post => {
-                return post.author === parent.id
-            })
-        },
-        comments(parent, args, { db }, info) {
-            return db.comments.filter(comment => {
-                return comment.author === parent.id
-            })
+        email: {
+            fragment: 'fragment userId on User { id }',
+            resolve(parent, args, { headers }, info) {
+                const userId = getUserId(headers, false)
+
+                if (userId && userId === parent.id) {
+                    return parent.email
+                } else {
+                    return null
+                }
+            }
         }
+        // posts(parent, args, { prisma }, info) {
+        //     return prisma.query.posts({
+        //         where: {
+        //             author: {
+        //                 id: parent.id
+        //             }
+        //         }
+        //     }, info)
+        // },
+        // comments(parent, args, { db }, info) {
+        //     return db.comments.filter(comment => {
+        //         return comment.author === parent.id
+        //     })
+        // }
     }
 }

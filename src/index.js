@@ -4,9 +4,9 @@ import { ApolloServer, PubSub } from 'apollo-server-express'
 //import cors from 'cors'
 
 import typeDefs from './typedefs'
-import resolvers from './resolvers'
+import resolvers, {fragmentReplacements} from './resolvers'
 import db from './db/data'
-import './prisma'
+import prisma from './prisma'
 
 const app = express()
 //cors
@@ -19,10 +19,16 @@ const httpServer = http.createServer(app)
 const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
-    context: {
-        db,
-        pubsub
-    }
+    context(request){
+        const headers = request.req.headers;
+        return {
+            db,
+            pubsub,
+            prisma,
+            headers
+        }
+    },
+    fragmentReplacements
 })
 
 apolloServer.applyMiddleware({ app })

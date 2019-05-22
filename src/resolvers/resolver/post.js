@@ -1,97 +1,139 @@
 import v4 from 'uuid/v4'
+import jwt from 'jsonwebtoken'
+
+import getUserId from '../../utils/getUserId'
 
 export default {
     Query: {
-        posts(parent, args, { db }, info) {
-            if (!args.query) {
-                return db.posts
+        posts(parent, args, { prisma }, info) {
+            const opArgs = {
+                where: {
+                    published: true
+                }
             }
 
-            return db.posts.filter(post => {
-                const isMatchTitle = post.title.toLocaleLowerCase().includes(args.query.toLowerCase())
-                const isMatchBody = post.body.toLocaleLowerCase().includes(args.query.toLowerCase())
+            if (args.query) {
+                opArgs.where.OR = [{
+                    title_contains: args.query
+                }, {
+                    body_contains: args.query
+                }]
+            }
 
-                return isMatchTitle || isMatchBody
-            })
+            return prisma.query.posts(opArgs, info)
+        },
+        myPosts(parent, args, { prisma, headers }, info) {
+            const userId = getUserId(headers)
+
+            const opArgs = {
+                where: {
+                    author: {
+                        id: userId
+                    }
+                }
+            }
+
+            if (args.query) {
+                opArgs.where.OR = [{
+                    title_contains: args.query
+                }, {
+                    body_contains: args.query
+                }]
+            }
+
+            return prisma.query.posts(opArgs, info)
+        },
+        async post(parent, args, { prisma, headers }, info) {
+            const userId = getUserId(headers, false)
+
+            const posts = await prisma.query.posts({
+                where: {
+                    id: args.id,
+                    OR: [{
+                        published: true
+                    }, {
+                        author: {
+                            id: userId
+                        }
+                    }]
+                }
+            }, info)
+
+            if (posts.length === 0) {
+                throw new Error('Post not found')
+            }
+
+            return posts[0]
         }
     },
     Mutation: {
-        createPost(parent, args, { db, pubsub }, info) {
-            const userExisted = db.users.some(user => {
-                return user.id === args.data.author
-            })
-            if (!userExisted) {
-                throw new Error('User not found')
-            }
+        async createPost(parent, args, { prisma, headers }, info) {
+            const userId = getUserId(headers)
 
-            const newPost = {
-                id: v4(),
-                ...args.data
-            }
-
-            db.posts.push(newPost)
-
-            if (newPost.published) {
-                pubsub.publish('post', {
-                    post: { mutation: 'CREATED', data: newPost }
-                })
-            }
-
-            return newPost
+            return prisma.mutation.createPost({
+                data: {
+                    title: args.data.title,
+                    body: args.data.body,
+                    published: args.data.published,
+                    author: {
+                        connect: {
+                            id: userId
+                        }
+                    }
+                }
+            }, info)
         },
-        updatePost(parent, { id, data }, { db }, info) {
-            const post = db.posts.find(post => post.id === id)
-            if (!post) {
-                throw new Error('Post not found')
-            }
-            if (data.title) {
-                post.title = data.title
-            }
-            if (data.body) {
-                post.body = data.body
-            }
-            if (typeof data.published !== 'undefined') {
-                post.published = data.published
-            }
-
-            pubsub.publish('post', {
-                post: {
-                    mutation: 'UPDATED',
-                    data: post
+        async updatePost(parent, { id, data }, { prisma, headers }, info) {
+            const userId = getUserId(headers)
+            //check post is existed
+            const postExisted = await prisma.exists.Post({
+                id,
+                author: {
+                    id: userId
                 }
             })
 
-            return post
-        },
-        deletePost(parent, args, { db, pubsub }, info) {
-            const delPostIndex = db.posts.findIndex(post => post.id === args.id)
-
-            if (delPostIndex === -1) {
+            if (!postExisted) {
                 throw new Error('Post not found')
             }
-            const deletedPost = db.posts.splice(delPostIndex, 1)[0]
-            //delete comment
-            db.comments = db.comments.filter(comment => comment.post !== args.id)
 
-            if (deletedPost.published) {
-                pubsub.publish('post', {
-                    post: { mutation: 'DELETED', data: deletedPost }
-                })
+            return prisma.mutation.updatePost({
+                data,
+                where: { id }
+            }, info)
+        },
+        async deletePost(parent, args, { prisma, headers }, info) {
+            const userId = getUserId(headers)
+
+            //check post is existed
+            const postExisted = await prisma.exists.Post({
+                id: args.id,
+                author: {
+                    id: userId
+                }
+            })
+
+            if (!postExisted) {
+                throw new Error('Post not found')
             }
 
-            return deletedPost
+            return prisma.mutation.deletePost({
+                where: {
+                    id: args.id
+                }
+            }, info)
         }
     },
     Post: {
-        author(parent, args, { db }, info) {
-            return db.users.find(user => {
-                return user.id === parent.author
-            })
-        },
-        comments(parent, args, { db }, info) {
-            return db.comments.filter(comment => {
-                return comment.post === parent.id
-            })
-        }
+        // author(parent, args, { db }, info) {
+        //     return db.users.find(user => {
+        //         return user.id === parent.author
+        //     })
+        // },
+        // comments(parent, args, { db }, info) {
+        //     return db.comments.filter(comment => {
+        //         return comment.post === parent.id
+        //     })
+        // }
     }
 }

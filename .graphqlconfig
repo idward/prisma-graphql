@@ -5,7 +5,12 @@
             "schemaPath":"src/generated/prisma.graphql",
             "extensions": {
                 "endpoints":{
-                    "default": "https://eu1.prisma.sh/idward/graphql-prisma/dev"
+                    "default": {
+                        "url": "https://eu1.prisma.sh/idward/graphql-prisma/dev",
+                        "headers": {
+                            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNlcnZpY2UiOiJncmFwaHFsLXByaXNtYUBkZXYiLCJyb2xlcyI6WyJhZG1pbiJdfSwiaWF0IjoxNTU4MjY4MTgyLCJleHAiOjE1NTg4NzI5ODJ9.ziImWwKFkXJdLJgyZuQP5oywHcAtiQxRJeJYwRroJiw"
+                        }
+                    }
                 }
             }
         }

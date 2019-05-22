@@ -1,2 +1,3 @@
 endpoint: https://eu1.prisma.sh/idward/graphql-prisma/dev
 datamodel: datamodel.prisma
+secret: thisismysuperscret

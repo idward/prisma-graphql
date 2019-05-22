@@ -11,7 +11,6 @@ input CreatePostInput {
     title: String!
     body: String!
     published: Boolean!
-    author: ID!
 }
 
 input UpdatePostInput {
@@ -22,6 +21,8 @@ input UpdatePostInput {
 
 type Query {
     posts(query:String):[Post!]!
+    post(id:ID!):Post!
+    myPosts(query:String):[Post!]!
 }
 
 type Mutation {

@@ -1,8 +1,8 @@
 type User {
     id: ID!
     name: String!
-    email: String!
-    age: Int
+    email: String
+    password: String!
     posts:[Post!]!
     comments:[Comment!]!
 }
@@ -10,21 +10,32 @@ type User {
 input CreateUserInput {
     name: String!
     email: String!
-    age: Int
+    password: String!
 }
 
 input UpdateUserInput {
     name: String
     email: String
-    age: Int
+}
+
+input LoginUserInput {
+    email: String!
+    password: String!
+}
+
+type AuthPayload {
+    user: User!
+    token: String!
 }
 
 type Query {
     users(query:String):[User!]!
+    me:User!
 }
 
 type Mutation {
-    createUser(data: CreateUserInput!):User!
-    updateUser(id: ID!, data: UpdateUserInput):User!
-    deleteUser(id: ID!):User!
+    createUser(data: CreateUserInput!):AuthPayload!
+    loginUser(data: LoginUserInput!):AuthPayload!
+    updateUser(data: UpdateUserInput):User!
+    deleteUser:User!
 }
