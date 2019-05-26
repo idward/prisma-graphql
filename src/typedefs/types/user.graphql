@@ -1,41 +1,64 @@
 type User {
-    id: ID!
-    name: String!
-    email: String
-    password: String!
-    posts:[Post!]!
-    comments:[Comment!]!
+  id: ID!
+  name: String!
+  email: String
+  password: String!
+  posts: [Post!]!
+  comments: [Comment!]!
+  updatedAt: String!
+  createdAt: String!
 }
 
 input CreateUserInput {
-    name: String!
-    email: String!
-    password: String!
+  name: String!
+  email: String!
+  password: String!
 }
 
 input UpdateUserInput {
-    name: String
-    email: String
+  name: String
+  email: String
 }
 
 input LoginUserInput {
-    email: String!
-    password: String!
+  email: String!
+  password: String!
+}
+
+enum UserOrderByInput {
+  id_ASC
+  id_DESC
+  name_ASC
+  name_DESC
+  email_ASC
+  email_DESC
+  password_ASC
+  password_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  createdAt_ASC
+  createdAt_DESC
 }
 
 type AuthPayload {
-    user: User!
-    token: String!
+  user: User!
+  token: String!
 }
 
 type Query {
-    users(query:String):[User!]!
-    me:User!
+  users(
+    query: String
+    first: Int
+    skip: Int
+    after: String
+    orderBy: UserOrderByInput
+  ): [User!]!
+  me: User!
 }
 
 type Mutation {
-    createUser(data: CreateUserInput!):AuthPayload!
-    loginUser(data: LoginUserInput!):AuthPayload!
-    updateUser(data: UpdateUserInput):User!
-    deleteUser:User!
+  createUser(data: CreateUserInput!): AuthPayload!
+  loginUser(data: LoginUserInput!): AuthPayload!
+  updateUser(data: UpdateUserInput): User!
+  deleteUser: User!
 }

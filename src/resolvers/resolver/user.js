@@ -1,23 +1,38 @@
 import v4 from 'uuid/v4'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
+import generateToken from '../../utils/generateToken'
+import hashPassword from '../../utils/hashPassword'
 
 import getUserId from '../../utils/getUserId'
 
 export default {
     Query: {
         users(parent, args, { prisma }, info) {
-            let opArgs = {}
+            const opArgs = {}
+            //pagination start
+            if (args.first) {
+                opArgs.first = args.first
+            }
 
+            if (args.skip) {
+                opArgs.skip = args.skip
+            }
+
+            if (args.after) {
+                opArgs.after = args.after
+            }
+            //pagination end
             if (args.query) {
-                opArgs = {
-                    where: {
-                        AND: [
-                            { name_contains: args.query },
-                            { email_contains: args.query }
-                        ]
-                    }
+                opArgs.where = {
+                    AND: [
+                        { name_contains: args.query },
+                        { email_contains: args.query }
+                    ]
                 }
+            }
+            //sort by field
+            if(args.orderBy) {
+                opArgs.orderBy = args.orderBy
             }
 
             return prisma.query.users(opArgs, info)
@@ -42,11 +57,7 @@ export default {
             // }
 
             //check password length must be more than 8 digit
-            if (args.data.password.length < 8) {
-                throw new Error('Password must not be less than 8 characters')
-            }
-
-            const password = await bcrypt.hash(args.data.password, 10)
+            const password = await hashPassword(args.data.password)
 
             const user = prisma.mutation.createUser({
                 data: {
@@ -57,7 +68,7 @@ export default {
 
             return {
                 user,
-                token: jwt.sign({ userId: user.id }, 'mysecret')
+                token: generateToken(user.id)
             }
         },
         async loginUser(parent, args, { prisma }, info) {
@@ -80,7 +91,7 @@ export default {
 
             return {
                 user,
-                token: jwt.sign({ userId: user.id }, 'mysecret')
+                token: generateToken(user.id)
             }
         },
         async updateUser(parent, { id, data }, { prisma, headers }, info) {
@@ -91,6 +102,10 @@ export default {
             // }
 
             const userId = getUserId(headers)
+
+            if (data.password && typeof data.password === 'string') {
+                data.password = await hashPassword(data.password)
+            }
 
             return prisma.mutation.updateUser({
                 data,
@@ -126,16 +141,20 @@ export default {
                     return null
                 }
             }
+        },
+        posts: {
+            fragment: 'fragment userId on User { id }',
+            resolve(parent, args, { prisma }, info) {
+                return prisma.query.posts({
+                    where: {
+                        published: true,
+                        author: {
+                            id: parent.id
+                        }
+                    }
+                }, info)
+            }
         }
-        // posts(parent, args, { prisma }, info) {
-        //     return prisma.query.posts({
-        //         where: {
-        //             author: {
-        //                 id: parent.id
-        //             }
-        //         }
-        //     }, info)
-        // },
         // comments(parent, args, { db }, info) {
         //     return db.comments.filter(comment => {
         //         return comment.author === parent.id

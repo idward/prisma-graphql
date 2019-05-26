@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken'
 
 const getUserId = (headers, requireAuth = true) => {
     console.log(headers);
-    const authorization = headers.authorization
+    const authorization = headers.authorization || headers.Authorization;
 
     if (!authorization && requireAuth) {
         throw new Error('Authorization Required')

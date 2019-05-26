@@ -5,6 +5,8 @@ type Post {
     published: Boolean!
     author: User!
     comments:[Comment!]!
+    updatedAt: String!
+    createdAt: String!
 }
 
 input CreatePostInput {
@@ -20,9 +22,9 @@ input UpdatePostInput {
 }
 
 type Query {
-    posts(query:String):[Post!]!
+    posts(query:String, first:Int, skip:Int, after:String):[Post!]!
     post(id:ID!):Post!
-    myPosts(query:String):[Post!]!
+    myPosts(query:String, first:Int, skip:Int, after:String):[Post!]!
 }
 
 type Mutation {

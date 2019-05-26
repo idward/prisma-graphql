@@ -12,6 +12,18 @@ export default {
                 }
             }
 
+            if (args.first) {
+                opArgs.first = args.first
+            }
+
+            if (args.skip) {
+                opArgs.skip = args.skip
+            }
+
+            if (args.after) {
+                opArgs.after = args.after
+            }
+
             if (args.query) {
                 opArgs.where.OR = [{
                     title_contains: args.query
@@ -31,6 +43,18 @@ export default {
                         id: userId
                     }
                 }
+            }
+
+            if (args.first) {
+                opArgs.first = args.first
+            }
+
+            if (args.skip) {
+                opArgs.skip = args.skip
+            }
+
+            if (args.after) {
+                opArgs.after = args.after
             }
 
             if (args.query) {
@@ -93,8 +117,23 @@ export default {
                 }
             })
 
+            const isPublished = await prisma.exists.Post({
+                id,
+                published: true
+            })
+
             if (!postExisted) {
                 throw new Error('Post not found')
+            }
+
+            if (isPublished && !data.published) {
+                await prisma.mutation.deleteManyComments({
+                    where: {
+                        post: {
+                            id
+                        }
+                    }
+                })
             }
 
             return prisma.mutation.updatePost({
@@ -125,11 +164,17 @@ export default {
         }
     },
     Post: {
-        // author(parent, args, { db }, info) {
-        //     return db.users.find(user => {
-        //         return user.id === parent.author
-        //     })
-        // },
+        // author: {
+        //     resolve(parent, args, { prisma }, info) {
+        //         return prisma.query.users({
+        //             where: {
+        //                 post_none: {
+        //                     id: parent.id
+        //                 }
+        //             }
+        //         }, info)
+        //     },
+        // }
         // comments(parent, args, { db }, info) {
         //     return db.comments.filter(comment => {
         //         return comment.post === parent.id

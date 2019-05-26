@@ -8,7 +8,7 @@
                     "default": {
                         "url": "https://eu1.prisma.sh/idward/graphql-prisma/dev",
                         "headers": {
-                            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNlcnZpY2UiOiJncmFwaHFsLXByaXNtYUBkZXYiLCJyb2xlcyI6WyJhZG1pbiJdfSwiaWF0IjoxNTU4MjY4MTgyLCJleHAiOjE1NTg4NzI5ODJ9.ziImWwKFkXJdLJgyZuQP5oywHcAtiQxRJeJYwRroJiw"
+                            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNlcnZpY2UiOiJncmFwaHFsLXByaXNtYUBkZXYiLCJyb2xlcyI6WyJhZG1pbiJdfSwiaWF0IjoxNTU4NzgwMDQyLCJleHAiOjE1NTkzODQ4NDJ9.P8iK7LITd5zvtSjGI2VouZOleAJwwBL9UvWUhdjAPyk"
                         }
                     }
                 }

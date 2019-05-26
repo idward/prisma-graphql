@@ -5,12 +5,41 @@ import getUserId from '../../utils/getUserId'
 export default {
     Query: {
         comments(parent, args, { prisma }, info) {
-            return prisma.query.comments(null, info)
+            const opArgs = {}
+
+            if (args.query) {
+                opArgs.where = {
+                    text_contains: args.query
+                }
+            }
+
+            if (args.first) {
+                opArgs.first = args.first
+            }
+
+            if (args.skip) {
+                opArgs.skip = args.skip
+            }
+
+            if (args.after) {
+                opArgs.after = args.after
+            }
+
+            return prisma.query.comments(opArgs, info)
         }
     },
     Mutation: {
         async createComment(parent, args, { prisma, headers }, info) {
             const userId = getUserId(headers)
+
+            const postExisted = await prisma.exists.Post({
+                id: args.data.post,
+                published: true
+            })
+
+            if (!postExisted) {
+                throw new Error('Post not found')
+            }
 
             return prisma.mutation.createComment({
                 data: {
