@@ -11,7 +11,7 @@ const getUserId = (headers, requireAuth = true) => {
     if (authorization) {
         const token = authorization.split(' ')[1]
         //return payload {userId: XXX}
-        const { userId } = jwt.verify(token, 'mysecret')
+        const { userId } = jwt.verify(token, process.env.JWT_SECRET)
         return userId
     } else {
         return null

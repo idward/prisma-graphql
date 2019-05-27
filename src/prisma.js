@@ -5,7 +5,7 @@ import { fragmentReplacements } from './resolvers'
 const prisma = new Prisma({
     typeDefs: path.resolve(__dirname, 'generated', 'prisma.graphql'),
     endpoint: process.env.PRISMA_ENDPOINT,
-    secret: 'thisismysuperscret',
+    secret: process.env.PRISMA_SECRET,
     fragmentReplacements
 })
 
