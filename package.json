@@ -7,13 +7,18 @@
     "start": "env-cmd -f ./config/prod.env node ./dist/index.js",
     "postbuild": "babel src --out-dir dist --copy-files",
     "dev": "env-cmd -f ./config/dev.env nodemon ./src/index.js",
-    "test": "jest --watch",
+    "test": "env-cmd -f ./config/test.env jest --watch",
     "get-schema": "graphql get-schema -p prisma"
+  },
+  "jest": {
+    "globalSetup":"./tests/jest/globalSetup.js",
+    "globalTeardown":"./tests/jest/globalTeardown.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/polyfill": "^7.4.4",
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.7.0",
@@ -25,6 +30,7 @@
   },
   "dependencies": {
     "apollo-server-express": "^2.5.0",
+    "babel-register": "^6.26.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "express": "^4.16.4",
