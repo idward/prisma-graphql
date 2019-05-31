@@ -11,8 +11,8 @@
     "get-schema": "graphql get-schema -p prisma"
   },
   "jest": {
-    "globalSetup":"./tests/jest/globalSetup.js",
-    "globalTeardown":"./tests/jest/globalTeardown.js"
+    "globalSetup": "./tests/jest/globalSetup.js",
+    "globalTeardown": "./tests/jest/globalTeardown.js"
   },
   "keywords": [],
   "author": "",
@@ -29,11 +29,14 @@
     "prisma-binding": "^2.3.10"
   },
   "dependencies": {
+    "apollo-boost": "^0.1.14",
     "apollo-server-express": "^2.5.0",
     "babel-register": "^6.26.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "cross-fetch": "^3.0.3",
     "express": "^4.16.4",
+    "graphql": "^14.3.1",
     "graphql-import": "^0.7.1",
     "graphql-yoga": "^1.14.10",
     "jsonwebtoken": "^8.5.1",
