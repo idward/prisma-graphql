@@ -7,7 +7,7 @@
     "start": "env-cmd -f ./config/prod.env node ./dist/index.js",
     "postbuild": "babel src --out-dir dist --copy-files",
     "dev": "env-cmd -f ./config/dev.env nodemon ./src/index.js",
-    "test": "env-cmd -f ./config/test.env jest --watch",
+    "test": "env-cmd -f ./config/test.env jest --watch --runInBand --verbose false",
     "get-schema": "graphql get-schema -p prisma"
   },
   "jest": {
