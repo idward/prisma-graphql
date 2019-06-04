@@ -3,21 +3,15 @@ import { gql } from 'apollo-boost'
 import prisma from '../src/prisma'
 import seedDatabase, { userOne } from './utils/seedDatabase'
 import getClient from './utils/getClient'
-import { NoUndefinedVariablesRule } from 'graphql';
 
 const client = getClient()
 
 beforeEach(seedDatabase);
 
-test('should return a user', async () => {
-    const createUser = gql`
-        mutation {
+const createUser = gql`
+        mutation($data:CreateUserInput!) {
             createUser(
-                data: {
-                    name:"idward",
-                    email:"idward@vip.sina.com",
-                    password:"abc123456"
-                }
+                data: $data
             ) {
                 token
                 user {
@@ -29,8 +23,18 @@ test('should return a user', async () => {
         }
     `
 
+test('should return a user', async () => {
+    const variables = {
+        data: {
+            name: "idward",
+            email: "idward@vip.sina.com",
+            password: "abc123456"
+        }
+    }
+
     const response = await client.mutate({
-        mutation: createUser
+        mutation: createUser,
+        variables
     })
 
     const userExisted = await prisma.exists.User({
@@ -54,18 +58,15 @@ test('Should expose a public author profile', async () => {
     `
     const response = await client.query({ query: getUsers })
 
-    expect(response.data.users.length).toBe(1);
+    expect(response.data.users.length).toBe(2);
     expect(response.data.users[0].email).toBe(null);
 })
 
 test('Should not login with wrong credentials', async () => {
     const loginUser = gql`
-        mutation {
+        mutation($data:LoginUserInput!) {
             loginUser(
-                data: {
-                    email:"jacky.ma@alibaba.com",
-                    password:"abc223456"
-                }
+                data: $data
             ){
                 token
                 user {
@@ -75,32 +76,32 @@ test('Should not login with wrong credentials', async () => {
             }
         }
     `
+
+    const variables = {
+        data: {
+            email:"jacky.ma@alibaba.com",
+            password:"abc223456"
+        }
+    }
+
     await expect(client.mutate({
-        mutation: loginUser
+        mutation: loginUser,
+        variables
     })).rejects.toThrow()
 })
 
 test('Should not signup user with wrong password', async () => {
-    const signupUser = gql`
-        mutation {
-            createUser(
-                data: {
-                    name: "Justin",
-                    email: "justin.li@hotmail.cpom",
-                    password: "abc123"
-                }
-            ){
-                token
-                user {
-                    name
-                    email
-                }
-            }
+    const variables = {
+        data: {
+            name: "Justin",
+            email: "justin.li@hotmail.com",
+            password: "abc123"
         }
-    `
+    }
 
     await expect(client.mutate({
-        mutation: signupUser
+        mutation: createUser,
+        variables
     })).rejects.toThrow()
 })
 
